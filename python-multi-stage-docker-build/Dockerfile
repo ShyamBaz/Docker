@@ -1,6 +1,6 @@
 # ------------------- Stage 1: Build Stage ------------------------------
 
-FROM ubuntu AS devops-build
+FROM python:3.9 AS devops-build
 
 # Set the working directory in the image
 WORKDIR /app
@@ -9,23 +9,13 @@ WORKDIR /app
 COPY requirements.txt /app/
 COPY devops /app/
 
-# Install the necessary packages
-RUN apt-get update && apt-get install -y python3 python3-pip python3-venv
-
-# Use bash shell to run the commands
-#SHELL ["/bin/bash", "-c"]
-
-# Create a virtual environment and install the dependencies
-RUN python3 -m venv venv1 && \
-source venv1/bin/activate && \
-pip install --no-cache-dir -r requirements.txt
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # ------------------- Stage 2: Final Stage ------------------------------
 
 # Use a slim Python 3.9 image as the final base image
 FROM python:3.9-slim
-# Use a distroless Python 3.9 image as the final base image
-#FROM gcr.io/distroless/python3
 
 # Set the working directory to /app
 WORKDIR /app
@@ -40,4 +30,4 @@ COPY --from=devops-build /app /app
 EXPOSE 8000
 
 # Run a command to start the application inside the container at runtime
-CMD source venv1/bin/activate && python3 manage.py runserver 0.0.0.0:8000
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
