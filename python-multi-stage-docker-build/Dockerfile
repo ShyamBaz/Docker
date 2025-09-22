@@ -13,7 +13,7 @@ COPY devops /app/
 RUN apt-get update && apt-get install -y python3 python3-pip python3-venv
 
 # Use bash shell to run the commands
-SHELL ["/bin/bash", "-c"]
+#SHELL ["/bin/bash", "-c"]
 
 # Create a virtual environment and install the dependencies
 RUN python3 -m venv venv1 && \
@@ -23,12 +23,15 @@ pip install --no-cache-dir -r requirements.txt
 # ------------------- Stage 2: Final Stage ------------------------------
 
 # Use a slim Python 3.9 image as the final base image
-#FROM python:3.9-slim
+FROM python:3.9-slim
 # Use a distroless Python 3.9 image as the final base image
-FROM gcr.io/distroless/python3
+#FROM gcr.io/distroless/python3
 
 # Set the working directory to /app
 WORKDIR /app
+
+# Copy the built dependencies from the devops-build stage
+COPY --from=devops-build /usr/local/lib/python3.9/site-packages/ /usr/local/lib/python3.9/site-packages/
 
 # Copy the application code from the devops-build stage
 COPY --from=devops-build /app /app
